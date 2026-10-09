@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Informe de Diseño y Normalización 3FN - Logística Última Milla</title>
+  <style>
+    @page { size: A4; margin: 18mm 15mm 18mm 15mm; }
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-size: 10.5pt;
+      line-height: 1.5;
+      color: #0f172a;
+      background: #f1f5f9;
+      margin: 0;
+      padding: 20px;
+    }
+    .panel-acciones {
+      max-width: 950px;
+      margin: 0 auto 16px auto;
+      background: #ffffff;
+      padding: 12px 20px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .btn {
+      background: #2563eb;
+      color: #fff;
+      border: none;
+      padding: 10px 18px;
+      font-weight: bold;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .btn:hover { background: #1d4ed8; }
+    .hoja {
+      max-width: 950px;
+      margin: 0 auto;
+      background: #ffffff;
+      padding: 40px 50px;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+    }
+    h1 { font-size: 18pt; color: #0f172a; border-bottom: 2px solid #2563eb; padding-bottom: 8px; margin-top: 0; }
+    h2 { font-size: 13pt; color: #1e3a8a; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px; margin-top: 26px; }
+    h3 { font-size: 11pt; color: #334155; margin-top: 16px; margin-bottom: 6px; }
+    .meta-doc {
+      font-size: 9.5pt;
+      color: #64748b;
+      margin-bottom: 20px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0 20px 0;
+      font-size: 9.5pt;
+    }
+    th, td {
+      border: 1px solid #cbd5e1;
+      padding: 8px 10px;
+      text-align: left;
+    }
+    th { background: #f8fafc; color: #0f172a; font-weight: 600; }
+    tr:nth-child(even) { background: #fcfcfd; }
+    .bloque-formula {
+      background: #f8fafc;
+      border-left: 4px solid #2563eb;
+      padding: 10px 14px;
+      margin: 10px 0;
+      font-family: 'Consolas', monospace;
+      font-size: 9pt;
+      line-height: 1.5;
+      overflow-x: auto;
+    }
+    .pk { text-decoration: underline; font-weight: bold; }
+    .fk { color: #2563eb; font-weight: bold; }
+    ul, ol { margin-top: 6px; padding-left: 22px; }
+    li { margin-bottom: 6px; }
+    .item-desc { margin-bottom: 12px; }
+    .item-desc strong { color: #0f172a; }
+    @media print {
+      body { background: #ffffff; padding: 0; }
+      .panel-acciones { display: none; }
+      .hoja { border: none; box-shadow: none; padding: 0; max-width: 100%; }
+      h2 { page-break-after: avoid; }
+      table { page-break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="panel-acciones">
+    <span><strong>Exportación del Informe Técnico:</strong></span>
+    <button class="btn" onclick="window.print()">📄 Guardar como PDF / Imprimir</button>
+  </div>
+
+  <div class="hoja">
+    <h1>Informe Técnico: Modelado Conceptual, Extracción de Dependencias y Normalización a 3FN</h1>
+    <div class="meta-doc">
+      <strong>Asignatura:</strong> Bases de Datos II &amp; Ingeniería de Software (Curso 2026-2027)<br>
+      <strong>Sistema:</strong> Gestión para la Generación Automática de Rutas de Reparto de Última Milla
+    </div>
+
+    <h2>1. Catálogo Conceptual y Descripción Detallada de Entidades</h2>
+    
+    <h3>1.1. Jerarquía de Usuarios y Control de Accesos (ISA Total y Disjunta)</h3>
+    <div class="item-desc">
+      <p><strong>USUARIO (Superentidad Raíz):</strong> Representa a cualquier persona física que interactúa con la plataforma web o móvil. Centraliza la identidad digital, el control de acceso unificado, las credenciales de seguridad y los mecanismos de renovación de sesión para evitar redundancia de datos personales.<br>
+      <em>Atributos:</em> <code>id_usuario</code> (PK), <code>nombre</code>, <code>email</code>, <code>password_hash</code>, <code>tipo_rol</code>, <code>activo</code>, <code>refresh_token</code>, <code>refresh_token_expire</code>.</p>
+    </div>
+    <div class="item-desc">
+      <p><strong>COORDINADOR_LOGISTICO (Subtipo):</strong> Actor operativo de oficina encargado de alimentar el banco de pedidos, seleccionar los paquetes a despachar, configurar los criterios de balanceo algorítmico, desencadenar la generación automática de rutas y resolver manualmente las solicitudes de reprogramación que le sean encomendadas.<br>
+      <em>Atributos:</em> <code>id_coordinador</code> (PK), <code>especialidad</code>.</p>
+    </div>
+    <div class="item-desc">
+      <p><strong>REPARTIDOR (Subtipo):</strong> Operador de campo que conduce el vehículo y ejecuta materialmente la entrega de los pedidos a lo largo de las paradas de la ruta asignada. Reporta en tiempo real el éxito o fallo de cada entrega y levanta las solicitudes virtuales de reprogramación en caso de incidencias.<br>
+      <em>Atributos:</em> <code>id_repartidor</code> (PK), <code>edad</code>, <code>flota</code>, <code>estado_disponibilidad</code>.</p>
+    </div>
+    <div class="item-desc">
+      <p><strong>SUPERVISOR_OPERACIONES (Subtipo):</strong> Auditor del flujo operativo que tiene la potestad de revisar las rutas generadas por el algoritmo y los coordinadores. Su función es evaluar si los recorridos cumplen los estándares de negocio, aprobándolos para su ejecución o rechazándolos para exigir una reconfiguración de parámetros.<br>
+      <em>Atributos:</em> <code>id_supervisor</code> (PK), <code>area_control</code>.</p>
+    </div>
+    <div class="item-desc">
+      <p><strong>ADMINISTRADOR (Subtipo):</strong> Usuario responsable de la integridad global y parametrización de la plataforma. Su responsabilidad incluye velar por la exclusión de pedidos duplicados y auditar que ningún repartidor tenga doble asignación de rutas activas de forma concurrente.<br>
+      <em>Atributos:</em> <code>id_admin</code> (PK), <code>nivel_acceso</code>.</p>
+    </div>
+
+    <h3>1.2. Infraestructura Territorial y Almacenamiento</h3>
+    <div class="item-desc">
+      <p><strong>CENTRO_DISTRIBUCION:</strong> Almacén central, nave o punto logístico de origen desde donde radican físicamente los pedidos ingresados y desde donde parten las rutas de reparto hacia los distintos sectores urbanos.<br>
+      <em>Atributos:</em> <code>id_centro</code> (PK), <code>nombre_centro</code>, <code>programa_logistico</code>.</p>
+    </div>
+    <div class="item-desc">
+      <p><strong>ZONA:</strong> Demarcación geográfica o sector territorial atendido por uno o más centros de distribución. Las conexiones viales y tiempos dinámicos se gestionan de forma desacoplada en un motor de grafos externo.<br>
+      <em>Atributos:</em> <code>id_zona</code> (PK), <code>nombre_zona</code>.</p>
+    </div>
+    <div class="item-desc">
+      <p><strong>PARADA:</strong> Punto físico de detención en la vía pública o dirección postal donde el vehículo debe detenerse para consolidar la entrega de uno o varios paquetes dirigidos a esa misma ubicación.<br>
+      <em>Atributos:</em> <code>id_parada</code> (PK), <code>direccion</code>.</p>
+    </div>
+
+    <h3>1.3. Gestión de Carga y Manifiestos de Entrega</h3>
+    <div class="item-desc">
+      <p><strong>PEDIDO:</strong> Unidad atómica de transporte (paquete, sobre o bulto). Es ingresado por un coordinador al banco de pedidos, clasificado por prioridad y tipo de entrega, y posteriormente asignado a una ruta específica para su traslado físico.<br>
+      <em>Atributos:</em> <code>id_pedido</code> (PK), <code>descripcion</code>, <code>tipo_entrega</code>, <code>prioridad</code>, <code>fecha_ingreso</code>, <code>estado_pedido</code>.</p>
+    </div>
+
+    <h3>1.4. Planificación, Generación de Rutas y Trazabilidad</h3>
+    <div class="item-desc">
+      <p><strong>CRITERIO_EQUILIBRIO:</strong> Regla matemática o algoritmo de balanceo utilizado por el generador de rutas para optimizar la carga de trabajo. Admite tanto criterios nativos preestablecidos como nuevos criterios definidos por los coordinadores.<br>
+      <em>Atributos:</em> <code>id_criterio</code> (PK), <code>nombre_criterio</code>, <code>descripcion_criterio</code>, <code>es_preestablecido</code>.</p>
+    </div>
+    <div class="item-desc">
+      <p><strong>RUTA:</strong> Expedición o itinerario de reparto planificado para una jornada. Consolida el manifiesto de pedidos seleccionados, define el vehículo requerido y marca la hoja de ruta que deberá ejecutar un repartidor tras la revisión del supervisor.<br>
+      <em>Atributos:</em> <code>id_ruta</code> (PK), <code>fecha_creacion</code>, <code>fecha_programada</code>, <code>capacidad_vehiculo</code>, <code>estado_ruta</code>, <code>fecha_validacion</code>.</p>
+    </div>
+    <div class="item-desc">
+      <p><strong>REGISTRO_ENTREGA:</strong> Constancia formal y transaccional levantada en campo al momento de intentar entregar un pedido específico en su parada. Documenta si el paquete pudo ser entregado con éxito o si se produjo un fallo en destino.<br>
+      <em>Atributos:</em> <code>id_entrega</code> (PK), <code>fecha_hora</code>, <code>resultado</code>, <code>observaciones</code>.</p>
+    </div>
+    <div class="item-desc">
+      <p><strong>REPROGRAMACION:</strong> Expediente o ticket de gestión abierto automáticamente o a petición virtual del repartidor cuando una entrega resulta fallida. Permite que el repartidor designe a un coordinador logístico específico para que este último reasigne, reprograme o devuelva el paquete al almacén.<br>
+      <em>Atributos:</em> <code>id_reprogramacion</code> (PK), <code>fecha_solicitud</code>, <code>motivo</code>, <code>estado_solicitud</code>, <code>resultado_manual</code>, <code>fecha_resolucion</code>.</p>
+    </div>
+
+    <h2>2. Catálogo y Descripción Semántica de Interrelaciones</h2>
+    <ul>
+      <li><strong>AUTORIZADO_EN (COORDINADOR_LOGISTICO &harr; CENTRO_DISTRIBUCION):</strong> Permite verificar en qué centros un coordinador tiene potestad para dar de alta pedidos y confeccionar rutas. <em>(Look-Across: Coord 0,m : 1,n Centro)</em>.</li>
+      <li><strong>ASIGNADO_A (REPARTIDOR &harr; CENTRO_DISTRIBUCION):</strong> Asocia a cada repartidor con los centros de distribución donde se encuentra habilitado para recibir asignaciones de reparto. <em>(Look-Across: Rep 0,m : 1,n Centro)</em>.</li>
+      <li><strong>CUBRE (CENTRO_DISTRIBUCION &harr; ZONA):</strong> Define la cobertura territorial del almacén, vinculando los centros con las zonas atendidas en su operación diaria. <em>(Look-Across: Centro 1,m : 1,n Zona)</em>.</li>
+      <li><strong>INGRESA (COORDINADOR_LOGISTICO &harr; PEDIDO):</strong> Modela la autoría del alta en el banco de pedidos, donde un único coordinador ingresa y clasifica el pedido. <em>(Look-Across: Coord 1,1 : 0,n Pedido)</em>.</li>
+      <li><strong>RADICADO_EN (CENTRO_DISTRIBUCION &harr; PEDIDO):</strong> Asocia físicamente a cada pedido con el almacén en cuyas bodegas permanece custodiado antes de su despacho. <em>(Look-Across: Centro 1,1 : 0,n Pedido)</em>.</li>
+      <li><strong>ENTREGA_EN (PEDIDO &harr; PARADA):</strong> Conecta al pedido con su parada física exacta de destino. Una parada consolida múltiples pedidos. <em>(Look-Across: Pedido 1,n : 1,1 Parada)</em>.</li>
+      <li><strong>LOCALIZADA_EN (PARADA &harr; ZONA):</strong> Sitúa catastralmente el punto físico de parada dentro de una zona geográfica cubierta. <em>(Look-Across: Parada 0,n : 1,1 Zona)</em>.</li>
+      <li><strong>DESTINADO_A (PEDIDO &harr; ZONA):</strong> Representa la clasificación territorial que asigna el coordinador a los pedidos para agruparlos por zona geográfica de destino (dependencia que en normalización se deduce transitivamente a través de la parada). <em>(Look-Across: Pedido 0,n : 1,1 Zona)</em>.</li>
+      <li><strong>CONTIENE_PEDIDO (RUTA &harr; PEDIDO):</strong> <em>Manifiesto directo de carga (Resolución de Chasm Trap).</em> Conecta la ruta con los pedidos que transporta. Una ruta contiene uno o muchos pedidos; un pedido en un momento dado pertenece a lo sumo a una ruta activa. <em>(Look-Across: Ruta 0,1 : 1,n Pedido)</em>.</li>
+      <li><strong>GENERA (COORDINADOR_LOGISTICO &harr; RUTA):</strong> Identifica al coordinador específico que aplicó los criterios de balanceo y disparó el proceso automático para crear la ruta. <em>(Look-Across: Coord 1,1 : 0,n Ruta)</em>.</li>
+      <li><strong>ORIGINADA_EN (CENTRO_DISTRIBUCION &harr; RUTA):</strong> Determina la instalación física desde la cual parte el vehículo para iniciar el recorrido programado. <em>(Look-Across: Centro 1,1 : 0,n Ruta)</em>.</li>
+      <li><strong>REVISA_Y_APRUEBA (SUPERVISOR_OPERACIONES &harr; RUTA):</strong> Registra la validación de control de calidad efectuada por el supervisor sobre la propuesta de ruta. <em>(Look-Across: Sup 0,1 : 0,n Ruta)</em>.</li>
+      <li><strong>EJECUTA (REPARTIDOR &harr; RUTA):</strong> Asigna la conducción y reparto de la ruta a un único repartidor habilitado. <em>(Look-Across: Rep 0,1 : 0,n Ruta)</em>.</li>
+      <li><strong>RECORRE_PARADA (RUTA &harr; PARADA):</strong> <em>Itinerario de navegación.</em> Secuencia ordenada de paradas que el repartidor debe transitar en calle. Contiene el atributo propio <code>orden_visita</code>. <em>(Look-Across: Ruta 0,m : 1,n Parada)</em>.</li>
+      <li><strong>APLICA_CRITERIO (RUTA &harr; CRITERIO_EQUILIBRIO):</strong> Asocia las reglas de balanceo utilizadas en la generación de la ruta, congelando su configuración en el atributo <code>parametros_configuracion</code>. <em>(Look-Across: Ruta 0,m : 1,n Criterio)</em>.</li>
+      <li><strong>ORIGINA (PEDIDO &harr; REGISTRO_ENTREGA):</strong> Garantiza la trazabilidad atómica al registrar en campo el resultado individual de entrega de cada paquete en su parada. <em>(Look-Across: Pedido 1,1 : 0,1 Reg_Entrega)</em>.</li>
+      <li><strong>REQUIERE (REGISTRO_ENTREGA &harr; REPROGRAMACION):</strong> Conecta una entrega no completada con la solicitud de reprogramación generada para resolverla. <em>(Look-Across: Reg_Entrega 1,1 : 0,1 Reprog)</em>.</li>
+      <li><strong>SOLICITA (REPARTIDOR &harr; REPROGRAMACION):</strong> Identifica al conductor que emite virtualmente la solicitud de reprogramación desde terreno. <em>(Look-Across: Rep 1,1 : 0,n Reprog)</em>.</li>
+      <li><strong>RESUELVE (COORDINADOR_LOGISTICO &harr; REPROGRAMACION):</strong> Designa al coordinador logístico elegido para gestionar y registrar el dictamen manual de la reprogramación. <em>(Look-Across: Coord 1,1 : 0,n Reprog)</em>.</li>
+    </ul>
+
+    <h2>3. Universo de Atributos del Sistema (U)</h2>
+    <div class="bloque-formula">
+      U = { id_usuario, nombre, email, password_hash, tipo_rol, activo, refresh_token, refresh_token_expire,<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;id_coordinador, especialidad,<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;id_repartidor, edad, flota, estado_disponibilidad,<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;id_supervisor, area_control,<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;id_admin, nivel_acceso,<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;id_centro, nombre_centro, programa_logistico,<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;id_zona, nombre_zona,<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;id_parada, direccion,<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;id_pedido, descripcion, tipo_entrega, prioridad, fecha_ingreso, estado_pedido,<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;id_criterio, nombre_criterio, descripcion_criterio, es_preestablecido,<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;id_ruta, fecha_creacion, fecha_programada, capacidad_vehiculo, estado_ruta, fecha_validacion,<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;id_entrega, fecha_hora, resultado, observaciones,<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;id_reprogramacion, fecha_solicitud, motivo, estado_solicitud, resultado_manual, fecha_resolucion,<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;orden_visita, parametros_configuracion }
+    </div>
+
+    <h2>4. Extracción Formal de Dependencias Funcionales (F)</h2>
+
+    <h3>Regla 1: Dependencias de Entidades y Jerarquía ISA (K &rarr; X)</h3>
+    <div class="bloque-formula">
+      f1: {id_usuario} &rarr; {nombre, email, password_hash, tipo_rol, activo, refresh_token, refresh_token_expire}<br>
+      f2: {id_coordinador} &rarr; {especialidad, id_usuario}<br>
+      f3: {id_repartidor} &rarr; {edad, flota, estado_disponibilidad, id_usuario}<br>
+      f4: {id_supervisor} &rarr; {area_control, id_usuario}<br>
+      f5: {id_admin} &rarr; {nivel_acceso, id_usuario}<br>
+      f6: {id_centro} &rarr; {nombre_centro, programa_logistico}<br>
+      f7: {id_zona} &rarr; {nombre_zona}<br>
+      f8: {id_parada} &rarr; {direccion}<br>
+      f9: {id_pedido} &rarr; {descripcion, tipo_entrega, prioridad, fecha_ingreso, estado_pedido}<br>
+      f10: {id_criterio} &rarr; {nombre_criterio, descripcion_criterio, es_preestablecido}<br>
+      f11: {id_ruta} &rarr; {fecha_creacion, fecha_programada, capacidad_vehiculo, estado_ruta, fecha_validacion}<br>
+      f12: {id_entrega} &rarr; {fecha_hora, resultado, observaciones}<br>
+      f13: {id_reprogramacion} &rarr; {fecha_solicitud, motivo, estado_solicitud, resultado_manual, fecha_resolucion}
+    </div>
+
+    <h3>Regla 2: Interrelaciones con Extremo Máximo 1 (K - KE &rarr; KE)</h3>
+    <div class="bloque-formula">
+      f14: {id_pedido} &rarr; id_coordinador &nbsp;&nbsp;(INGRESA)<br>
+      f15: {id_pedido} &rarr; id_centro &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(RADICADO_EN)<br>
+      f16: {id_pedido} &rarr; id_parada &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(ENTREGA_EN)<br>
+      f17: {id_parada} &rarr; id_zona &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(LOCALIZADA_EN)<br>
+      f18: {id_pedido} &rarr; id_zona &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(DESTINADO_A - regla territorial transicional)<br>
+      f19: {id_pedido} &rarr; id_ruta &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(CONTIENE_PEDIDO)<br>
+      f20: {id_ruta} &rarr; id_coordinador &nbsp;&nbsp;&nbsp;&nbsp;(GENERA)<br>
+      f21: {id_ruta} &rarr; id_centro &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(ORIGINADA_EN)<br>
+      f22: {id_ruta} &rarr; id_supervisor &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(REVISA_Y_APRUEBA)<br>
+      f23: {id_ruta} &rarr; id_repartidor &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(EJECUTA)<br>
+      f24: {id_entrega} &rarr; id_pedido &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(ORIGINA)<br>
+      f25: {id_reprogramacion} &rarr; id_entrega &nbsp;(REQUIERE)<br>
+      f26: {id_reprogramacion} &rarr; id_repartidor (SOLICITA)<br>
+      f27: {id_reprogramacion} &rarr; id_coordinador (RESUELVE)
+    </div>
+
+    <h3>Regla 3: Atributos Propios de Interrelaciones N:M (K_rel &rarr; X)</h3>
+    <div class="bloque-formula">
+      f28: {id_ruta, id_parada} &rarr; orden_visita<br>
+      f29: {id_ruta, id_criterio} &rarr; parametros_configuracion
+    </div>
+
+    <h2>5. Algoritmo de Obtención del Cubrimiento Mínimo (F_mín)</h2>
+    <ol>
+      <li><strong>F' (Consecuentes unitarios):</strong> Descomposición exhaustiva de lados derechos multivaluados aplicando el axioma de descomposición de Armstrong.</li>
+      <li><strong>F'' (Determinantes sin atributos extraños):</strong> Se comprueba que en <code>{id_ruta, id_parada} &rarr; orden_visita</code> y <code>{id_ruta, id_criterio} &rarr; parametros_configuracion</code> ningún atributo individual determina los consecuentes. Por tanto, <code>F'' = F'</code>.</li>
+      <li><strong>F''' (Eliminación de redundancias transitivas):</strong>
+        <p>Al evaluar <code>f18: {id_pedido} &rarr; id_zona</code> en <code>G = F'' - {f18}</code>:</p>
+        <p>Calculando la clausura: <code>{id_pedido}^+_G = {id_pedido, id_parada, id_zona, ...}</code> a través de <code>f16</code> y <code>f17</code>.</p>
+        <p>Al pertenecer <code>id_zona</code> a dicha clausura, <strong>f18 es transitiva y redundante</strong>. Se elimina definitivamente de <code>F'''</code> para salvaguardar la Tercera Forma Normal.</p>
+      </li>
+    </ol>
+
+    <h2>6. Diccionario Formal de Tablas Resultantes en 3FN</h2>
+    <p>Aplicando el Algoritmo de Síntesis de Bernstein agrupando por determinante único en <code>F'''</code>, se genera el esquema relacional formal compuesto por las siguientes 18 tablas:</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Tabla (3FN)</th>
+          <th>Clave Primaria (PK)</th>
+          <th>Atributos Descriptivos</th>
+          <th>Claves Foráneas (FK) y Referencias</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>USUARIO</strong></td>
+          <td><span class="pk">id_usuario</span></td>
+          <td>nombre, email, password_hash, tipo_rol, activo, refresh_token, refresh_token_expire</td>
+          <td>-</td>
+        </tr>
+        <tr>
+          <td><strong>COORDINADOR_LOGISTICO</strong></td>
+          <td><span class="pk">id_coordinador</span></td>
+          <td>especialidad</td>
+          <td><span class="fk">FK: id_coordinador &rarr; USUARIO(id_usuario)</span></td>
+        </tr>
+        <tr>
+          <td><strong>REPARTIDOR</strong></td>
+          <td><span class="pk">id_repartidor</span></td>
+          <td>edad, flota, estado_disponibilidad</td>
+          <td><span class="fk">FK: id_repartidor &rarr; USUARIO(id_usuario)</span></td>
+        </tr>
+        <tr>
+          <td><strong>SUPERVISOR_OPERACIONES</strong></td>
+          <td><span class="pk">id_supervisor</span></td>
+          <td>area_control</td>
+          <td><span class="fk">FK: id_supervisor &rarr; USUARIO(id_usuario)</span></td>
+        </tr>
+        <tr>
+          <td><strong>ADMINISTRADOR</strong></td>
+          <td><span class="pk">id_admin</span></td>
+          <td>nivel_acceso</td>
+          <td><span class="fk">FK: id_admin &rarr; USUARIO(id_usuario)</span></td>
+        </tr>
+        <tr>
+          <td><strong>CENTRO_DISTRIBUCION</strong></td>
+          <td><span class="pk">id_centro</span></td>
+          <td>nombre_centro, programa_logistico</td>
+          <td>-</td>
+        </tr>
+        <tr>
+          <td><strong>ZONA</strong></td>
+          <td><span class="pk">id_zona</span></td>
+          <td>nombre_zona</td>
+          <td>-</td>
+        </tr>
+        <tr>
+          <td><strong>CENTRO_ZONA</strong></td>
+          <td><span class="pk">id_centro, id_zona</span></td>
+          <td>-</td>
+          <td><span class="fk">FK: id_centro &rarr; CENTRO, id_zona &rarr; ZONA</span></td>
+        </tr>
+        <tr>
+          <td><strong>PARADA</strong></td>
+          <td><span class="pk">id_parada</span></td>
+          <td>direccion</td>
+          <td><span class="fk">FK: id_zona &rarr; ZONA(id_zona)</span></td>
+        </tr>
+        <tr>
+          <td><strong>PEDIDO</strong></td>
+          <td><span class="pk">id_pedido</span></td>
+          <td>descripcion, tipo_entrega, prioridad, fecha_ingreso, estado_pedido</td>
+          <td>
+            <span class="fk">FK: id_coordinador &rarr; COORD, id_centro &rarr; CENTRO</span><br>
+            <span class="fk">FK: id_parada &rarr; PARADA, id_ruta &rarr; RUTA (Nullable)</span>
+          </td>
+        </tr>
+        <tr>
+          <td><strong>CRITERIO_EQUILIBRIO</strong></td>
+          <td><span class="pk">id_criterio</span></td>
+          <td>nombre_criterio, descripcion_criterio, es_preestablecido</td>
+          <td>-</td>
+        </tr>
+        <tr>
+          <td><strong>RUTA</strong></td>
+          <td><span class="pk">id_ruta</span></td>
+          <td>fecha_creacion, fecha_programada, capacidad_vehiculo, estado_ruta, fecha_validacion</td>
+          <td>
+            <span class="fk">FK: id_coordinador &rarr; COORD, id_centro &rarr; CENTRO</span><br>
+            <span class="fk">FK: id_supervisor &rarr; SUP (Nullable), id_repartidor &rarr; REP (Nullable)</span>
+          </td>
+        </tr>
+        <tr>
+          <td><strong>RUTA_PARADA</strong></td>
+          <td><span class="pk">id_ruta, id_parada</span></td>
+          <td>orden_visita</td>
+          <td><span class="fk">FK: id_ruta &rarr; RUTA, id_parada &rarr; PARADA</span></td>
+        </tr>
+        <tr>
+          <td><strong>RUTA_CRITERIO</strong></td>
+          <td><span class="pk">id_ruta, id_criterio</span></td>
+          <td>parametros_configuracion</td>
+          <td><span class="fk">FK: id_ruta &rarr; RUTA, id_criterio &rarr; CRITERIO</span></td>
+        </tr>
+        <tr>
+          <td><strong>COORDINADOR_CENTRO</strong></td>
+          <td><span class="pk">id_coordinador, id_centro</span></td>
+          <td>-</td>
+          <td><span class="fk">FK: id_coordinador &rarr; COORD, id_centro &rarr; CENTRO</span></td>
+        </tr>
+        <tr>
+          <td><strong>REPARTIDOR_CENTRO</strong></td>
+          <td><span class="pk">id_repartidor, id_centro</span></td>
+          <td>-</td>
+          <td><span class="fk">FK: id_repartidor &rarr; REP, id_centro &rarr; CENTRO</span></td>
+        </tr>
+        <tr>
+          <td><strong>REGISTRO_ENTREGA</strong></td>
+          <td><span class="pk">id_entrega</span></td>
+          <td>fecha_hora, resultado, observaciones</td>
+          <td><span class="fk">FK: id_pedido &rarr; PEDIDO(id_pedido)</span></td>
+        </tr>
+        <tr>
+          <td><strong>REPROGRAMACION</strong></td>
+          <td><span class="pk">id_reprogramacion</span></td>
+          <td>fecha_solicitud, motivo, estado_solicitud, resultado_manual, fecha_resolucion</td>
+          <td>
+            <span class="fk">FK: id_entrega &rarr; REG_ENTREGA</span><br>
+            <span class="fk">FK: id_repartidor &rarr; REP, id_coordinador &rarr; COORD</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>7. Verificación de Propiedades Teóricas</h2>
+    <ul>
+      <li><strong>Tercera Forma Normal (3FN):</strong> En cada esquema relacional, para toda dependencia funcional no trivial <code>X &rarr; A</code>, el determinante <code>X</code> es superclave.</li>
+      <li><strong>Preservación de Dependencias Funcionales:</strong> Se verifica que <code>(&cup; &Pi;_Ri(F'''))^+ = F^+</code>. Ninguna regla requiere operaciones JOIN para ser validada.</li>
+      <li><strong>Reunión sin Pérdida (Lossless Join):</strong> Todas las claves foráneas referencian claves primarias únicas, impidiendo la generación de tuplas espurias al recomponer el esquema original.</li>
+    </ul>
+  </div>
+
+</body>
+</html>

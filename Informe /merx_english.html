@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ERCM - Formal Notation with Roles and Circular Attributes</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.8/dist/mermaid.min.js"></script>
+  <style>
+    @page { size: A4 landscape; margin: 10mm; }
+    * { box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 16px; background: #fff; color: #0f172a; }
+    .panel-acciones { display: flex; gap: 12px; margin-bottom: 16px; background: #f1f5f9; padding: 10px 16px; border-radius: 6px; align-items: center; }
+    .btn { padding: 8px 16px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 13px; }
+    .btn-pdf { background: #2563eb; color: #fff; }
+    .header { border-bottom: 2px solid #2563eb; padding-bottom: 6px; margin-bottom: 14px; }
+    .header h1 { margin: 0; font-size: 18px; text-transform: uppercase; color: #1e293b; }
+    .header p { margin: 3px 0 0; font-size: 12px; color: #64748b; }
+    #contenedor-diagrama { display: flex; justify-content: center; width: 100%; background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; }
+    #contenedor-diagrama svg { max-width: 100% !important; height: auto !important; }
+    .resumen-cambios { margin-top: 18px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 12px 16px; font-size: 12px; line-height: 1.5; }
+    .resumen-cambios h3 { margin: 0 0 6px; font-size: 13px; color: #1e3a8a; text-transform: uppercase; }
+    @media print { .panel-acciones { display: none; } body { padding: 0; } #contenedor-diagrama { border: none; padding: 0; } }
+  </style>
+</head>
+<body>
+  <div class="panel-acciones"><span><strong>Export options:</strong></span><button class="btn btn-pdf" onclick="window.print()">Save as PDF</button></div>
+  <div class="header">
+    <h1>Extended Entity-Relationship Model (ERCM)</h1>
+    <p>Hierarchy with ROOT ROLES entity and relationship attributes represented by circles</p>
+  </div>
+  <div id="contenedor-diagrama">
+    <div class="mermaid">
+flowchart TD
+    classDef ent fill:#f8fafc,stroke:#2563eb,stroke-width:2px,color:#0f172a,font-weight:bold;
+    classDef rel fill:#ffffff,stroke:#d97706,stroke-width:2px,color:#92400e;
+    classDef isa fill:#f5f3ff,stroke:#7c3aed,stroke-width:2px,color:#5b21b6,font-weight:bold;
+    classDef atr fill:#fef3c7,stroke:#b45309,stroke-width:1.5px,color:#78350f,font-size:11px;
+    classDef ext fill:#fef2f2,stroke:#dc2626,stroke-dasharray: 4 4,stroke-width:2px,color:#991b1b;
+    ROOT[User]:::ent
+    ISA["Roles"]:::isa
+    ROOT --- ISA
+    ISA --- COORD[LOGISTICS_COORDINATOR]:::ent
+    ISA --- REP[DRIVER]:::ent
+    ISA --- SUP[OPERATIONS_SUPERVISOR]:::ent
+    ISA --- ADM[ADMINISTRATOR]:::ent
+    CD[DISTRIBUTION_CENTER]:::ent
+    ZON[ZONE]:::ent
+    ROAD["DYNAMIC ROAD NETWORK<br><i>(External Graph Engine)</i>"]:::ext
+    R_COVERS{COVERS}:::rel
+    CD ---|"(1, m)"| R_COVERS
+    R_COVERS ---|"(1, n)"| ZON
+    ZON -.->|"Road topology"| ROAD
+    R_AUTH{AUTHORIZED_IN}:::rel
+    COORD ---|"(0, m)"| R_AUTH
+    R_AUTH ---|"(1, n)"| CD
+    R_ASSIGNED{ASSIGNED_TO}:::rel
+    REP ---|"(0, m)"| R_ASSIGNED
+    R_ASSIGNED ---|"(1, n)"| CD
+    ORD[ORDER]:::ent
+    STOP[STOP]:::ent
+    R_ENTERS{ENTERS}:::rel
+    COORD ---|"(1, 1)"| R_ENTERS
+    R_ENTERS ---|"(0, n)"| ORD
+    R_BASED{BASED_AT}:::rel
+    CD ---|"(1, 1)"| R_BASED
+    R_BASED ---|"(0, n)"| ORD
+    R_DEST{DESTINED_FOR}:::rel
+    ORD ---|"(0, n)"| R_DEST
+    R_DEST ---|"(1, 1)"| ZON
+    R_DELIVERS{DELIVERS_AT}:::rel
+    ORD ---|"(1, n)"| R_DELIVERS
+    R_DELIVERS ---|"(1, 1)"| STOP
+    R_LOCATED{LOCATED_IN}:::rel
+    STOP ---|"(0, n)"| R_LOCATED
+    R_LOCATED ---|"(1, 1)"| ZON
+    ROUTE[ROUTE]:::ent
+    CRIT[BALANCING_CRITERION]:::ent
+    R_GENERATES{GENERATES}:::rel
+    COORD ---|"(1, 1)"| R_GENERATES
+    R_GENERATES ---|"(0, n)"| ROUTE
+    R_REVIEWS{REVIEWS_AND_APPROVES}:::rel
+    SUP ---|"(0, 1)"| R_REVIEWS
+    R_REVIEWS ---|"(0, n)"| ROUTE
+    R_EXECUTES{EXECUTES}:::rel
+    REP ---|"(0, 1)"| R_EXECUTES
+    R_EXECUTES ---|"(0, n)"| ROUTE
+    R_APPLIES{APPLIES_CRITERION}:::rel
+    ROUTE ---|"(0, m)"| R_APPLIES
+    R_APPLIES ---|"(1, n)"| CRIT
+    ATTR_PARAMS((parameters)):::atr
+    R_APPLIES --- ATTR_PARAMS
+    R_CONTAINS{CONTAINS_ORDER}:::rel
+    ROUTE ---|"(0, 1)"| R_CONTAINS
+    R_CONTAINS ---|"(1, n)"| ORD
+    R_VISITS{VISITS_STOP}:::rel
+    ROUTE ---|"(0, m)"| R_VISITS
+    R_VISITS ---|"(1, n)"| STOP
+    ATTR_ORDER((visit_order)):::atr
+    R_VISITS --- ATTR_ORDER
+    DEL[DELIVERY_RECORD]:::ent
+    RES[RESCHEDULING]:::ent
+    R_ORIGINATES{ORIGINATES}:::rel
+    ORD ---|"(1, 1)"| R_ORIGINATES
+    R_ORIGINATES ---|"(0, 1)"| DEL
+    R_REQUIRES{REQUIRES}:::rel
+    DEL ---|"(1, 1)"| R_REQUIRES
+    R_REQUIRES ---|"(0, 1)"| RES
+    R_REQUESTS{REQUESTS}:::rel
+    REP ---|"(1, 1)"| R_REQUESTS
+    R_REQUESTS ---|"(0, n)"| RES
+    R_RESOLVES{EXECUTES_RESOLUTION}:::rel
+    COORD ---|"(1, 1)"| R_RESOLVES
+    R_RESOLVES ---|"(0, n)"| RES
+    </div>
+  </div>
+  <div class="resumen-cambios">
+    <h3>Notation details</h3>
+    <ul>
+      <li><strong>Root entity ROLES:</strong> the four operational subtypes are total and disjoint.</li>
+      <li><strong>Relationship attributes:</strong> <code>parameters</code> and <code>visit_order</code> are represented by yellow circular attributes attached to their M:N relationships.</li>
+      <li><strong>Cardinality consistency:</strong> each endpoint preserves the cardinality needed for normalization to 3NF.</li>
+    </ul>
+  </div>
+  <script>mermaid.initialize({ startOnLoad: true, theme: 'neutral' });</script>
+</body>
+</html>
